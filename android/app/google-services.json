@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "536784203763",
+    "project_id": "ur-health-3e147",
+    "storage_bucket": "ur-health-3e147.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:536784203763:android:63d76e0e6c4dea93742c86",
+        "android_client_info": {
+          "package_name": "com.example.ur_iot_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJ7Vm9sbTaGVETyOTUXyrnUKQBt4FyJK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
