@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ur_iot_app/pages/AboutUsPage.dart';
+import 'package:ur_iot_app/pages/ScanDevicePage.dart';
+
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -49,6 +51,22 @@ class SettingsPage extends StatelessWidget {
                 );
               },
               ),
+            ListTile(
+              leading: Icon(
+                Icons.bluetooth_connected,
+                color: Theme.of(context).colorScheme.inversePrimary,
+              ),
+              title: const Text("C O N N E C T  D E V I C E"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ScanDevicePage(),
+                  ),
+                );
+              },
+            ),
+
           ],
         ),
       ),
