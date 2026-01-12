@@ -8,16 +8,16 @@ class BleService {
   QualifiedCharacteristic? rxCharacteristic;
   QualifiedCharacteristic? txCharacteristic;
 
-  /// Scan devices
+  /// 🔍 Scan for BLE devices
   Stream<DiscoveredDevice> scanDevices() {
-    return _ble.scanForDevices(withServices: []);
+    return _ble.scanForDevices(
+      withServices: [],
+      scanMode: ScanMode.lowLatency,
+    );
   }
 
-  /// Connect to device + track connection state
-  void connect(
-      String deviceId,
-      BleConnectionState connectionState,
-      ) {
+  /// 🔗 Connect to device
+  void connect(String deviceId, BleConnectionState connectionState) {
     rxCharacteristic = QualifiedCharacteristic(
       deviceId: deviceId,
       serviceId: BleConstants.uartService,
@@ -35,22 +35,31 @@ class BleService {
       connectionTimeout: const Duration(seconds: 10),
     ).listen((update) {
       if (update.connectionState == DeviceConnectionState.connected) {
+        print("🟢 BLE connected");
         connectionState.setConnected(true);
-      } else if (update.connectionState ==
-          DeviceConnectionState.disconnected) {
+      }
+
+      if (update.connectionState == DeviceConnectionState.disconnected) {
+        print("🔴 BLE disconnected");
         connectionState.setConnected(false);
       }
     });
   }
 
-
-  /// Enable notifications (TX)
+  /// 📡 Subscribe to TX notifications
   Stream<List<int>> subscribeToData() {
     return _ble.subscribeToCharacteristic(txCharacteristic!);
   }
 
-  /// Write command (RX)
+  /// 📤 Write to RX
   Future<void> writeCommand(List<int> data) async {
+    if (rxCharacteristic == null) {
+      print("❗ RX characteristic not ready");
+      return;
+    }
+
+    print("📤 Writing to RX: $data");
+
     await _ble.writeCharacteristicWithResponse(
       rxCharacteristic!,
       value: data,

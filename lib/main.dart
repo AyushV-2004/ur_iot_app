@@ -5,21 +5,33 @@ import 'package:ur_iot_app/auth/auth.dart';
 import 'package:ur_iot_app/firebase_options.dart';
 import 'package:ur_iot_app/themes/lightMode.dart';
 import 'package:ur_iot_app/themes/darkMode.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'ble/ble_connection_state.dart';
+import 'ble/ble_data_provider.dart';
+import 'ble/ble_device_provider.dart';
+
 
 const String GEMINI_API_KEY = "AIzaSyBnP2ISKl3gTR3UJk33mVevmWcZTvazZYg";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Initialize Hive for local storage
   await Hive.initFlutter();
-  await Hive.openBox('healthData'); // stores sensor readings for graphs
+  await Hive.openBox('healthData');
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => BleConnectionState()),
+        ChangeNotifierProvider(create: (_) => BleDataProvider()),
+        ChangeNotifierProvider(create: (_) => BleDeviceProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

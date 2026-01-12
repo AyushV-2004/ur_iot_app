@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -15,6 +16,7 @@ class ScanDevicePage extends StatefulWidget {
 class _ScanDevicePageState extends State<ScanDevicePage> {
   final BleService bleService = BleService();
   final List<DiscoveredDevice> devices = [];
+  StreamSubscription<DiscoveredDevice>? _scanSub;
 
   bool isScanning = false;
   String statusText = "Checking permissions...";
@@ -25,27 +27,36 @@ class _ScanDevicePageState extends State<ScanDevicePage> {
     _checkPermissionAndScan();
   }
 
-  /// STEP 1: Ask location permission
   Future<void> _checkPermissionAndScan() async {
-    final status = await Permission.location.request();
+    final statuses = await [
+      Permission.location,
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+    ].request();
 
-    if (status.isGranted) {
-      statusText = "Scanning for devices...";
-      setState(() {});
+    final locationGranted = statuses[Permission.location]?.isGranted ?? false;
+    final scanGranted = statuses[Permission.bluetoothScan]?.isGranted ?? false;
+
+    if (locationGranted && scanGranted) {
+      setState(() {
+        statusText = "Scanning for devices...";
+      });
       _startScan();
     } else {
       setState(() {
-        statusText = "Location permission is required for BLE scanning";
+        statusText =
+        "Bluetooth and Location permissions are required for BLE scanning";
       });
     }
   }
 
-  /// STEP 2: Start BLE scan
   void _startScan() {
     isScanning = true;
     print("🔍 BLE scan started");
-    bleService.scanDevices().listen((device) {
+
+    _scanSub = bleService.scanDevices().listen((device) {
       print("📡 Discovered device: ${device.name} (${device.id})");
+
       if (device.name.startsWith("UrHealth_")) {
         if (!devices.any((d) => d.id == device.id)) {
           print("✅ Added AQI device: ${device.name}");
@@ -64,11 +75,15 @@ class _ScanDevicePageState extends State<ScanDevicePage> {
   }
 
   @override
+  void dispose() {
+    _scanSub?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Scan AQI Device"),
-      ),
+      appBar: AppBar(title: const Text("Scan AQI Device")),
       body: devices.isEmpty
           ? Center(
         child: Column(
@@ -76,11 +91,7 @@ class _ScanDevicePageState extends State<ScanDevicePage> {
           children: [
             if (isScanning) const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(
-              statusText,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
-            ),
+            Text(statusText, textAlign: TextAlign.center),
           ],
         ),
       )
@@ -93,6 +104,7 @@ class _ScanDevicePageState extends State<ScanDevicePage> {
             title: Text(device.name),
             subtitle: Text(device.id),
             onTap: () {
+              _scanSub?.cancel();
               Navigator.push(
                 context,
                 MaterialPageRoute(

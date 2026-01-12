@@ -6,7 +6,8 @@ class BleConnectionState extends ChangeNotifier {
   bool get isConnected => _isConnected;
 
   void setConnected(bool value) {
-    _isConnected = value;
-    notifyListeners();
+    // if (_isConnected != value) {
+      _isConnected = value;
+      notifyListeners();
+    }
   }
-}
